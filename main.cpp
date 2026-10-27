@@ -1,0 +1,96 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+
+// A. #define을 사용하여 각 상품의 원래 가격 상수로 정의
+#define PRICE_RED_POTION 1000
+#define PRICE_MAGIC_SCROLL 2000
+#define PRICE_ELIXIR 3000
+
+int main() {
+    int balance;
+    int choice;
+    int purchase_count = 0; // 구매 횟수 카운트 변수
+
+    // 초기 코인(잔액) 입력 받기
+    printf("Insert coins (Current Balance): ");
+    scanf("%d", &balance);
+
+    // 무한 루프 시작
+    while (1) {
+        // 자판기 메뉴 출력
+        printf("\n--- Goblin's Vending Machine ---\n");
+        printf("1. Red Potion (%d G)\n", PRICE_RED_POTION);
+        printf("2. Magic Scroll (%d G)\n", PRICE_MAGIC_SCROLL);
+        printf("3. Elixir (%d G)\n", PRICE_ELIXIR);
+        printf("0. Exit\n");
+        printf("--------------------------------\n");
+
+        printf("Select an item: ");
+        scanf("%d", &choice);
+
+        // 0번(종료)을 누른 경우
+        if (choice == 0) {
+            printf("Returning %d G. Goodbye!\n", balance);
+            break;
+        }
+
+        int item_price = 0;
+        int is_discount = 0; // 50% 할인 여부 체크
+
+        // 선택한 메뉴에 따른 가격 설정
+        if (choice == 1) {
+            item_price = PRICE_RED_POTION;
+        }
+        else if (choice == 2) {
+            item_price = PRICE_MAGIC_SCROLL;
+        }
+        else if (choice == 3) {
+            item_price = PRICE_ELIXIR;
+        }
+        else {
+            printf("Invalid choice. Try again.\n");
+            continue;
+        }
+
+        // 구매 횟수 증가 (물건을 고를 때마다 카운트 상승)
+        purchase_count++;
+
+        // 정확히 3번째 구매마다 도깨비의 축복(50% 할인) 적용
+        if (purchase_count % 3 == 0) {
+            item_price = item_price / 2;
+            printf("*** GOBLIN'S BLESSING! 50% DISCOUNT! ***\n");
+        }
+
+        // 잔액 부족 확인
+        if (balance < item_price) {
+            printf("Not enough balance!\n");
+            // 잔액이 부족해서 구매가 취소되었으므로, 카운트 원복 및 종료 처리
+            // (사진의 마지막 상황처럼 잔액 2000원에서 3000원짜리 Elixir 선택 시 잔액 부족 후 0번 눌러 종료하는 흐름과 일치)
+            purchase_count--; // 실패한 구매는 카운트에서 제외
+
+            // 사진을 보면 잔액 부족 후 바로 끝나는 것이 아니라 다시 메뉴가 뜨거나 종료할 수 있으므로 
+            // 잔액이 부족하면 여기서 바로 루프를 종료할지, 계속 진행할지 선택할 수 있습니다.
+            // 사진 결과 흐름상 잔액 부족 메시지 출력 후 다시 Select an item: 0 입력으로 이어지므로 계속 루프를 돕니다.
+            continue;
+        }
+
+        // 정상 구매 처리
+        balance -= item_price;
+
+        if (purchase_count % 3 == 0 && choice == 2) {
+            // 사진의 3번째 구매(Magic Scroll 50% 할인) 출력 문구 맞춤
+            printf("[Purchased] Magic Scroll for %d G. Balance: %d G\n", item_price, balance);
+        }
+        else if (choice == 1) {
+            printf("[Purchased] Red Potion. Balance: %d G\n", balance);
+        }
+        else if (choice == 2) {
+            printf("[Purchased] Magic Scroll. Balance: %d G\n", balance);
+        }
+        else if (choice == 3) {
+            printf("[Purchased] Elixir. Balance: %d G\n", balance);
+        }
+    }
+
+    return 0;
+}
