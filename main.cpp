@@ -1,95 +1,107 @@
+/**
+ * =================================================================
+ * @file   destiny_number.c
+ * @brief  생년월일 8자리를 입력받아 각 자리의 숫자를 더해
+ *         한 자리 수(1~9)인 '운명의 숫자'를 계산하고,
+ *         switch 문을 통해 맞춤형 운세를 출력하는 프로그램
+ * @author [작성자 이름]
+ * @date   2026-XX-XX
+ * =================================================================
+ */
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-// A. #define을 사용하여 각 상품의 원래 가격 상수로 정의
-#define PRICE_RED_POTION 1000
-#define PRICE_MAGIC_SCROLL 2000
-#define PRICE_ELIXIR 3000
+int main(void) {
+    // 1. 변수 선언 및 초기화
+    long long birth_input = 0; // 사용자로부터 입력받을 8자리 생년월일
+    int sum = 0;               // 각 자리 숫자의 합을 저장할 변수
+    int temp = 0;              // 계산을 위해 입력값을 임시로 다룰 변수
 
-int main() {
-    int balance;
-    int choice;
-    int purchase_count = 0; // 구매 횟수 카운트 변수
+    // 2. 문제 분석 및 입력 단계
+    printf("Enter your 8-digit birthdate (YYYYMMDD): ");
+    if (scanf("%lld", &birth_input) != 1) {
+        printf("잘못된 입력입니다.\n");
+        return 1;
+    }
 
-    // 초기 코인(잔액) 입력 받기
-    printf("Insert coins (Current Balance): ");
-    scanf("%d", &balance);
+    printf("Calculating...\n");
 
-    // 무한 루프 시작
-    while (1) {
-        // 자판기 메뉴 출력
-        printf("\n--- Goblin's Vending Machine ---\n");
-        printf("1. Red Potion (%d G)\n", PRICE_RED_POTION);
-        printf("2. Magic Scroll (%d G)\n", PRICE_MAGIC_SCROLL);
-        printf("3. Elixir (%d G)\n", PRICE_ELIXIR);
-        printf("0. Exit\n");
-        printf("--------------------------------\n");
+    // 3. 순서도 및 수식 정의에 따른 알고리즘 구현
+    // 입력받은 숫자가 10 이상인 동안 각 자리의 합을 구하는 과정을 반복 (1자리 숫자가 될 때까지)
+    temp = (int)birth_input; // 안전하게 int형 변환 후 처리 (8자리 숫자는 int 범위 내에 수용 가능)
 
-        printf("Select an item: ");
-        scanf("%d", &choice);
+    while (temp >= 10 || sum >= 10) {
+        if (temp < 10 && sum >= 10) {
+            // 한 사이클의 덧셈이 끝나고 결과가 두 자리 이상인 경우, 다시 합을 temp로 넘겨 반복
+            printf("Sum of digits: %d\n", sum);
+            temp = sum;
+            sum = 0;
+        }
 
-        // 0번(종료)을 누른 경우
-        if (choice == 0) {
-            printf("Returning %d G. Goodbye!\n", balance);
+        // 각 자리 숫자를 분리하여 더하는 수식 적용 (temp % 10 은 일의 자리 추출)
+        sum += temp % 10;
+        temp /= 10; // 십의 자리 이상만 남기기 위해 10으로 나눔
+
+        // 만약 최초 입력값에 대한 첫 번째 덧셈이 끝났을 때의 처리
+        if (temp == 0 && sum >= 10) {
+            printf("Sum of digits: %d\n", sum);
+            temp = sum;
+            sum = 0;
+        }
+        else if (temp == 0 && sum < 10) {
+            // 최종적으로 한 자리가 된 경우 출력
+            printf("Sum of digits: %d\n", sum);
             break;
         }
+    }
 
-        int item_price = 0;
-        int is_discount = 0; // 50% 할인 여부 체크
+    // 만약 최초 입력이 한 자리이거나 특수한 경우 방어 코드 (출력 형식을 예시와 맞춤)
+    // 예시 출력 포맷: "Your Destiny Number is X!"
+    int destiny_number = sum;
+    printf("Your Destiny Number is %d!\n\n", destiny_number);
 
-        // 선택한 메뉴에 따른 가격 설정
-        if (choice == 1) {
-            item_price = PRICE_RED_POTION;
-        }
-        else if (choice == 2) {
-            item_price = PRICE_MAGIC_SCROLL;
-        }
-        else if (choice == 3) {
-            item_price = PRICE_ELIXIR;
-        }
-        else {
-            printf("Invalid choice. Try again.\n");
-            continue;
-        }
-
-        // 구매 횟수 증가 (물건을 고를 때마다 카운트 상승)
-        purchase_count++;
-
-        // 정확히 3번째 구매마다 도깨비의 축복(50% 할인) 적용
-        if (purchase_count % 3 == 0) {
-            item_price = item_price / 2;
-            printf("*** GOBLIN'S BLESSING! 50% DISCOUNT! ***\n");
-        }
-
-        // 잔액 부족 확인
-        if (balance < item_price) {
-            printf("Not enough balance!\n");
-            // 잔액이 부족해서 구매가 취소되었으므로, 카운트 원복 및 종료 처리
-            // (사진의 마지막 상황처럼 잔액 2000원에서 3000원짜리 Elixir 선택 시 잔액 부족 후 0번 눌러 종료하는 흐름과 일치)
-            purchase_count--; // 실패한 구매는 카운트에서 제외
-
-            // 사진을 보면 잔액 부족 후 바로 끝나는 것이 아니라 다시 메뉴가 뜨거나 종료할 수 있으므로 
-            // 잔액이 부족하면 여기서 바로 루프를 종료할지, 계속 진행할지 선택할 수 있습니다.
-            // 사진 결과 흐름상 잔액 부족 메시지 출력 후 다시 Select an item: 0 입력으로 이어지므로 계속 루프를 돕니다.
-            continue;
-        }
-
-        // 정상 구매 처리
-        balance -= item_price;
-
-        if (purchase_count % 3 == 0 && choice == 2) {
-            // 사진의 3번째 구매(Magic Scroll 50% 할인) 출력 문구 맞춤
-            printf("[Purchased] Magic Scroll for %d G. Balance: %d G\n", item_price, balance);
-        }
-        else if (choice == 1) {
-            printf("[Purchased] Red Potion. Balance: %d G\n", balance);
-        }
-        else if (choice == 2) {
-            printf("[Purchased] Magic Scroll. Balance: %d G\n", balance);
-        }
-        else if (choice == 3) {
-            printf("[Purchased] Elixir. Balance: %d G\n", balance);
-        }
+    // 4. Switch 문을 활용한 운세 메시지 출력 (사용자 커스텀 영역)
+    printf("[Destiny Message]\n");
+    switch (destiny_number) {
+    case 1:
+        // TODO: 숫자 1에 대한 운세 메시지를 작성하세요.
+        printf("You will come out on top no matter what\n");
+        break;
+    case 2:
+        // TODO: 숫자 2에 대한 운세 메시지를 작성하세요.
+        printf("You will claim the second crown\n");
+        break;
+    case 3:
+        // TODO: 숫자 3에 대한 운세 메시지를 작성하세요.
+        printf("Take the good energy of the lucky number 3\n");
+        break;
+    case 4:
+        // TODO: 숫자 4에 대한 운세 메시지를 작성하세요.
+        printf("You will be blessed with four kinds of luck\n");
+        break;
+    case 5:
+        // TODO: 숫자 5에 대한 운세 메시지를 작성하세요.
+        printf("You will give birth to five children\n");
+        break;
+    case 6:
+        // TODO: 숫자 6에 대한 운세 메시지를 작성하세요.
+        printf("You will be able to buy six houses\n");
+        break;
+    case 7:
+        // 사진의 예시 문구 반영 (원하시는 내용으로 수정 가능합니다)
+        printf("You are an analytical thinker and a seeker of truth!\n");
+        break;
+    case 8:
+        // TODO: 숫자 8에 대한 운세 메시지를 작성하세요.
+        printf("You can become the eighth president\n");
+        break;
+    case 9:
+        // TODO: 숫자 9에 대한 운세 메시지를 작성하세요.
+        printf("You will be able to own nine castles\n");
+        break;
+    default:
+        printf("Unknown destiny number.\n");
+        break;
     }
 
     return 0;
