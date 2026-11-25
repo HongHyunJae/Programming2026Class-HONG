@@ -1,0 +1,104 @@
+#include <stdio.h>
+#include <math.h>
+
+#define NUM_CABLES 4
+#define DIM 3
+
+// 3차원 힘 벡터(Fx, Fy, Fz)의 크기(|F|)를 계산하는 함수
+double calcMagnitude(const double* pForce) {
+    double fx = *(pForce + 0);
+    double fy = *(pForce + 1);
+    double fz = *(pForce + 2);
+
+    return sqrt(fx * fx + fy * fy + fz * fz);
+}
+
+// 합력의 크기를 기준으로 내림차순 정렬(Sorting)하여 가장 큰 합력을 찾는 함수
+int findLargestForceIndex(const char** ppNames, const double* pMagnitudes, int n) {
+    int idx[NUM_CABLES];
+    double sortedMag[NUM_CABLES];
+    const char* sortedNames[NUM_CABLES];
+
+    for (int i = 0; i < n; i++) {
+        *(idx + i) = i;
+        *(sortedMag + i) = *(pMagnitudes + i);
+        *(sortedNames + i) = *(ppNames + i);
+    }
+
+    // 선택 정렬 (내림차순)
+    for (int i = 0; i < n - 1; i++) {
+        int maxIdx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (*(sortedMag + j) > *(sortedMag + maxIdx)) {
+                maxIdx = j;
+            }
+        }
+        if (maxIdx != i) {
+            double tempMag = *(sortedMag + i);
+            *(sortedMag + i) = *(sortedMag + maxIdx);
+            *(sortedMag + maxIdx) = tempMag;
+
+            const char* tempName = *(sortedNames + i);
+            *(sortedNames + i) = *(sortedNames + maxIdx);
+            *(sortedNames + maxIdx) = tempName;
+
+            int tempIdx = *(idx + i);
+            *(idx + i) = *(idx + maxIdx);
+            *(idx + maxIdx) = tempIdx;
+        }
+    }
+
+    return *(idx + 0);
+}
+
+int main(void) {
+    // Visual Studio E0144 방지를 위해 const char * 사용
+    const char* strCableName[NUM_CABLES] = { "Cable-1", "Cable-2", "Cable-3", "Cable-4" };
+
+    /* each row : {Fx, Fy, Fz} */
+    double dArrCableForce[NUM_CABLES][DIM] = {
+        { 120.0,  50.0,  -30.0},
+        { -80.0, 140.0,   60.0},
+        {  45.0, -95.0,  110.0},
+        { -60.0, -70.0, -150.0}
+    };
+
+    double dMagnitudes[NUM_CABLES];
+    double dResultant[DIM] = { 0.0, 0.0, 0.0 };
+
+    for (int i = 0; i < NUM_CABLES; i++) {
+        *(dMagnitudes + i) = calcMagnitude(*(dArrCableForce + i));
+
+        for (int j = 0; j < DIM; j++) {
+            *(dResultant + j) += *(*(dArrCableForce + i) + j);
+        }
+    }
+
+    double dResultantMag = calcMagnitude(dResultant);
+
+    printf("%-9s%8s%8s%8s |%8s  [N]\n", "Force", "Fx", "Fy", "Fz", "|F|");
+
+    for (int i = 0; i < NUM_CABLES; i++) {
+        printf("%-9s%8.1f%8.1f%8.1f |%8.1f\n",
+            *(strCableName + i),
+            *(*(dArrCableForce + i) + 0),
+            *(*(dArrCableForce + i) + 1),
+            *(*(dArrCableForce + i) + 2),
+            *(dMagnitudes + i));
+    }
+
+    printf("%-9s%8.1f%8.1f%8.1f |%8.1f\n",
+        "Resultant",
+        *(dResultant + 0),
+        *(dResultant + 1),
+        *(dResultant + 2),
+        dResultantMag);
+
+    int maxCableIdx = findLargestForceIndex(strCableName, dMagnitudes, NUM_CABLES);
+
+    printf("Largest force : %s (%.1f N)\n",
+        *(strCableName + maxCableIdx),
+        *(dMagnitudes + maxCableIdx));
+
+    return 0;
+}
