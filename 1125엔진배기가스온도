@@ -1,0 +1,68 @@
+#include <stdio.h>
+
+// 오름차순 정렬(Sorting) 함수
+void sortArray(double arr[], int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - 1 - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                double temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int main() {
+    // 주어진 자료
+    double dArrEngATemp[5] = { 612.5, 618.0, 615.3, 620.1, 616.4 };
+    double dArrEngBTemp[5] = { 605.2, 640.8, 598.7, 652.3, 610.0 };
+    double dArrEngCTemp[5] = { 630.0, 628.4, 633.9, 631.2, 629.5 };
+
+    // 수정된 부분: const 추가
+    const char* strEngName[3] = { "ENG-A", "ENG-B", "ENG-C" };
+
+    // 1차원 배열 3개를 포인터 배열로 연결
+    double* dEgt[3] = { dArrEngATemp, dArrEngBTemp, dArrEngCTemp };
+
+    double minVal[3], maxVal[3], range[3];
+    double maxRange = 0.0;
+    int maxIdx = 0;
+
+    // 헤더 출력
+    printf("Engine\t   #1\t   #2\t   #3\t   #4\t   #5  |\t  Min\t  Max\tRange\n");
+
+    for (int i = 0; i < 3; i++) {
+        // 1. 원본 측정값을 2차원 배열처럼 dEgt[i][j]로 먼저 출력
+        printf("%s\t", strEngName[i]);
+        for (int j = 0; j < 5; j++) {
+            printf("%6.1f\t", dEgt[i][j]);
+        }
+
+        // 2. 정렬을 위해 임시 배열에 복사 (원본 순서 보존)
+        double tempArr[5];
+        for (int j = 0; j < 5; j++) {
+            tempArr[j] = dEgt[i][j];
+        }
+
+        // 3. Sorting 함수를 호출하여 오름차순 정렬 후 최소/최대값 추출
+        sortArray(tempArr, 5);
+        minVal[i] = tempArr[0];
+        maxVal[i] = tempArr[4];
+        range[i] = maxVal[i] - minVal[i];
+
+        // 4. 최소값, 최대값, 변동폭 출력
+        printf("|\t%6.1f\t%6.1f\t%5.1f\n", minVal[i], maxVal[i], range[i]);
+
+        // 5. 변동폭이 가장 큰 엔진 찾기
+        if (i == 0 || range[i] > maxRange) {
+            maxRange = range[i];
+            maxIdx = i;
+        }
+    }
+
+    // 최종 결과 출력
+    printf("Largest variation : %s (%.1f deg C)\n", strEngName[maxIdx], maxRange);
+
+    return 0;
+}
